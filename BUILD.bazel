@@ -134,6 +134,7 @@ cc_binary(
   srcs = [
     "src/terminal/TerminalClientMain.cpp",
   ],
+  linkopts = ["-lresolv"],
   deps = [
     ":et-lib",
     ":TerminalCommon",
