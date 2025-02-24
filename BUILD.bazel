@@ -1,0 +1,167 @@
+proto_library(
+  name = "et_proto",
+  srcs = ["proto/ET.proto"],
+  strip_import_prefix = "proto",
+)
+
+proto_library(
+  name = "eterminal_proto",
+  srcs = ["proto/ETerminal.proto"],
+  deps = [":et_proto"],  
+)
+
+cc_proto_library(
+  name = "et_cc_proto",
+  deps = [":et_proto"],
+  visibility = ["//visibility:public"],
+)
+
+cc_proto_library(
+  name = "eterminal_cc_proto",
+  deps = [":eterminal_proto"],
+  visibility = ["//visibility:public"],
+)
+
+cc_library(
+  name = "et-lib",
+  hdrs = [
+    "src/base/Headers.hpp",
+    "src/base/JsonLib.hpp",
+  ],
+  srcs = [
+    ":et_cc_proto",
+    ":eterminal_cc_proto",
+    "src/base/BackedReader.hpp",
+    "src/base/BackedReader.cpp",
+    "src/base/BackedWriter.hpp",
+    "src/base/BackedWriter.cpp",
+    "src/base/ClientConnection.hpp",
+    "src/base/ClientConnection.cpp",
+    "src/base/Connection.hpp",
+    "src/base/Connection.cpp",
+    "src/base/CryptoHandler.hpp",
+    "src/base/CryptoHandler.cpp",
+    "src/base/ServerClientConnection.hpp",
+    "src/base/ServerClientConnection.cpp",
+    "src/base/ServerConnection.hpp",
+    "src/base/ServerConnection.cpp",
+    "src/base/SocketHandler.hpp",
+    "src/base/SocketHandler.cpp",
+    "src/base/Packet.hpp",
+    "src/base/PipeSocketHandler.hpp",
+    "src/base/PipeSocketHandler.cpp",
+    "src/base/TcpSocketHandler.hpp",
+    "src/base/TcpSocketHandler.cpp",
+    "src/base/UnixSocketHandler.hpp",
+    "src/base/UnixSocketHandler.cpp",
+    "src/base/LogHandler.hpp",
+    "src/base/LogHandler.cpp",
+    "src/base/DaemonCreator.hpp",
+    "src/base/DaemonCreator.cpp",
+    "src/base/RawSocketUtils.hpp",
+    "src/base/RawSocketUtils.cpp",
+    "src/base/WinsockContext.hpp",
+    "src/base/SubprocessToString.hpp",
+    "src/base/SubprocessToString.cpp",
+    "src/base/TunnelUtils.hpp",
+    "src/base/TunnelUtils.cpp",
+  ],
+  deps = [
+    "@cpp-httplib//:cpp-httplib",
+    "@libsodium//:libsodium",
+    "@protobuf//:protobuf",
+    "@openssl//:ssl",
+    "@easyloggingpp//:easyloggingpp",
+    "@base64//:base64",
+    "@ThreadPool//:ThreadPool",
+    "@PlatformFolders//:PlatformFolders",
+    "@sole//:sole",
+    "@UniversalStacktrace//:UniversalStacktrace",
+    "@json//:json",
+  ],
+  includes = [
+    "_virtual_imports/et_proto",
+    "proto",
+    "src/base",
+  ],
+)
+
+cc_library(
+  name = "TerminalCommon",
+  hdrs = [
+    "src/terminal/ParseConfigFile.hpp",
+    "src/terminal/PsuedoTerminalConsole.hpp",
+    "src/terminal/PsuedoUserTerminal.hpp",
+  ],
+  srcs = [
+    "src/terminal/forwarding/PortForwardHandler.hpp",
+    "src/terminal/forwarding/PortForwardHandler.cpp",
+    "src/terminal/forwarding/ForwardSourceHandler.hpp",
+    "src/terminal/forwarding/ForwardSourceHandler.cpp",
+    "src/terminal/forwarding/ForwardDestinationHandler.hpp",
+    "src/terminal/forwarding/ForwardDestinationHandler.cpp",
+    "src/terminal/Console.hpp",
+    "src/terminal/TerminalServer.hpp",
+    "src/terminal/TerminalServer.cpp",
+    "src/terminal/UserTerminalRouter.hpp",
+    "src/terminal/UserTerminalRouter.cpp",
+    "src/terminal/TerminalClient.hpp",
+    "src/terminal/TerminalClient.cpp",
+    "src/terminal/ServerFifoPath.hpp",
+    "src/terminal/ServerFifoPath.cpp",
+    "src/terminal/SshSetupHandler.hpp",
+    "src/terminal/SshSetupHandler.cpp",
+    "src/terminal/UserTerminal.hpp",
+    "src/terminal/UserTerminalHandler.hpp",
+    "src/terminal/UserTerminalHandler.cpp",
+    "src/terminal/UserJumphostHandler.hpp",
+    "src/terminal/UserJumphostHandler.cpp",
+    "src/terminal/TelemetryService.hpp",
+    "src/terminal/TelemetryService.cpp",
+  ],
+  includes = [
+    "src/terminal",
+    "src/terminal/forwarding",
+  ],
+  deps = [
+    ":et-lib",
+    "@simpleini//:simpleini",
+  ],
+)
+
+cc_binary(
+  name = "et",
+  srcs = [
+    "src/terminal/TerminalClientMain.cpp",
+  ],
+  deps = [
+    ":et-lib",
+    ":TerminalCommon",
+    "@cxxopts//:cxxopts",
+  ],
+)
+
+cc_binary(
+  name = "etterminal",
+  srcs = [
+    "src/terminal/TerminalMain.cpp",
+  ],
+  linkopts = ["-lutil"],
+  deps = [
+    ":et-lib",
+    ":TerminalCommon",
+    "@cxxopts//:cxxopts",
+  ],
+)
+
+cc_binary(
+  name = "etserver",
+  srcs = [
+    "src/terminal/TerminalServerMain.cpp",
+  ],
+  deps = [
+    ":et-lib",
+    ":TerminalCommon",
+    "@cxxopts//:cxxopts",
+  ],
+)

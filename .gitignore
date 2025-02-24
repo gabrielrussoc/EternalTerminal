@@ -5,6 +5,7 @@ out
 *PVS-Studio*
 .dccache
 /*build/
+bazel-*
 
 # Public/private keys
 id_rsa*

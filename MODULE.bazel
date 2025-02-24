@@ -1,0 +1,162 @@
+module(name = "eternalterminal", version = "6.2.9")
+
+bazel_dep(name = "toolchains_llvm", version = "1.3.0")
+
+# Configure and register the toolchain.
+llvm = use_extension("@toolchains_llvm//toolchain/extensions:llvm.bzl", "llvm")
+llvm.toolchain(
+   llvm_version = "16.0.0",
+)
+
+use_repo(llvm, "llvm_toolchain")
+
+register_toolchains("@llvm_toolchain//:all")
+
+bazel_dep(name = "protobuf", version = "3.19.0")
+bazel_dep(name = "cpp-httplib", version = "0.16.3")
+bazel_dep(name = "libsodium", version = "1.0.19")
+bazel_dep(name = "openssl", version = "3.3.1.bcr.1")
+
+http_archive = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
+http_archive(
+    name = "ThreadPool", 
+    urls = ["https://github.com/progschj/ThreadPool/archive/9a42ec1329f259a5f4881a291db1dcb8f2ad9040.zip"],
+    strip_prefix = "ThreadPool-9a42ec1329f259a5f4881a291db1dcb8f2ad9040",
+    integrity = "sha256-GIVLt+zB/J192px5ih7wyBwt0zHXMMdsdfZIGJ+gwg8=",
+    build_file_content = """
+cc_library(
+    name = "ThreadPool",
+    hdrs = ["ThreadPool.h"],
+    includes = ["."],
+    visibility = ["//visibility:public"],
+)
+    """,
+)
+
+http_archive(
+    name = "base64", 
+    urls = ["https://github.com/tkislan/base64/archive/6780d5b26f73fb1df39589d943ea21aefd5c3726.zip"],
+    strip_prefix = "base64-6780d5b26f73fb1df39589d943ea21aefd5c3726",
+    integrity = "sha256-UHko9410KZDTTImhLfHb7oas1ic+VDbpjKdYLbf3HwY=",
+    build_file_content = """
+cc_library(
+    name = "base64",
+    hdrs = ["base64.h"],
+    includes = ["."],
+    visibility = ["//visibility:public"],
+)
+    """,
+)
+
+http_archive(
+    name = "easyloggingpp", 
+    urls = ["https://github.com/MisterTea/easyloggingpp/archive/8489989bb26c6371df103f6cbced3fbee1bc3c2f.zip"],
+    strip_prefix = "easyloggingpp-8489989bb26c6371df103f6cbced3fbee1bc3c2f",
+    integrity = "sha256-JhW2+aOKZgsghjdevCzExuQs31WEfqrtAsGNiNTsFiw=",
+    build_file_content = """
+cc_library(
+    name = "easyloggingpp",
+    srcs = ["src/easylogging++.cc"],
+    hdrs = ["src/easylogging++.h"],
+    includes = ["src"],
+    visibility = ["//visibility:public"],
+)
+    """,
+)
+
+http_archive(
+    name = "PlatformFolders", 
+    urls = ["https://github.com/sago007/PlatformFolders/archive/784f8ceb8bbd042722caf2cdec427c7b80e0a960.zip"],
+    strip_prefix = "PlatformFolders-784f8ceb8bbd042722caf2cdec427c7b80e0a960",
+    integrity = "sha256-+6YGkjapYb1lNOOzE3ct1ibGSRmWEzhBmwH/cjbrBdw=",
+    build_file_content = """
+cc_library(
+    name = "PlatformFolders",
+    srcs = ["sago/platform_folders.cpp"],
+    hdrs = ["sago/platform_folders.h"],
+    includes = ["."],
+    visibility = ["//visibility:public"],
+)
+    """,
+)
+
+http_archive(
+    name = "sole", 
+    urls = ["https://github.com/r-lyeh-archived/sole/archive/424b96931da2ffe1b51c94c212ffca5bae983b1e.zip"],
+    strip_prefix = "sole-424b96931da2ffe1b51c94c212ffca5bae983b1e",
+    integrity = "sha256-xcsoLfahO8F5yenJB91R9BcxuPYp3H2Y8YLs2PuLURE=",
+    build_file_content = """
+cc_library(
+    name = "sole",
+    srcs = ["sole.cpp"],
+    hdrs = ["sole.hpp"],
+    includes = ["."],
+    visibility = ["//visibility:public"],
+)
+    """,
+)
+
+http_archive(
+    name = "UniversalStacktrace", 
+    urls = ["https://github.com/MisterTea/UniversalStacktrace/archive/e6ca24525f28556dd4847443b07dd4b9a4affa9d.zip"],
+    strip_prefix = "UniversalStacktrace-e6ca24525f28556dd4847443b07dd4b9a4affa9d",
+    integrity = "sha256-aoAz2PcBvRBNZZawcfgTyoNX0ip4MTXRKehrpF4R93k=",
+    build_file_content = """
+cc_library(
+    name = "UniversalStacktrace",
+    hdrs = ["ust/ust.hpp"],
+    includes = ["ust"],
+    visibility = ["//visibility:public"],
+)
+    """,
+)
+
+http_archive(
+    name = "json", 
+    urls = ["https://github.com/nlohmann/json/archive/9cca280a4d0ccf0c08f47a99aa71d1b0e52f8d03.zip"],
+    strip_prefix = "json-9cca280a4d0ccf0c08f47a99aa71d1b0e52f8d03",
+    integrity = "sha256-QgE+iEqKONKpdGGYRKKU3mFNq0vBTgrSNxHvTay7JME=",
+    build_file_content = """
+cc_library(
+    name = "json",
+    hdrs = glob(["**/*.hpp"]),
+    includes = ["include"],
+    visibility = ["//visibility:public"],
+)
+    """,
+)
+
+http_archive(
+    name = "simpleini", 
+    urls = ["https://github.com/brofield/simpleini/archive/9b3ed7ec815997bc8c5b9edf140d6bde653e1458.zip"],
+    strip_prefix = "simpleini-9b3ed7ec815997bc8c5b9edf140d6bde653e1458",
+    integrity = "sha256-aUJUY4nlb7TDbqYjeuKrnJXHaT8uvbZyzIyYmtm+c/c=",
+    build_file_content = """
+cc_library(
+    name = "simpleini",
+    srcs = [
+      "ConvertUTF.c",
+      "ConvertUTF.h",
+    ],
+    hdrs = ["SimpleIni.h"],
+    includes = ["."],
+    visibility = ["//visibility:public"],
+)
+    """,
+)
+
+http_archive(
+    name = "cxxopts", 
+    urls = ["https://github.com/jarro2783/cxxopts/archive/eb787304d67ec22f7c3a184ee8b4c481d04357fd.zip"],
+    strip_prefix = "cxxopts-eb787304d67ec22f7c3a184ee8b4c481d04357fd",
+    integrity = "sha256-0bVpdIrlqUQcHpR+KNpP/R2p2mVPK8+bRSquIOh5VEE=",
+    build_file_content = """
+cc_library(
+    name = "cxxopts",
+    hdrs = ["include/cxxopts.hpp"],
+    includes = ["include"],
+    visibility = ["//visibility:public"],
+)
+    """,
+)
