@@ -366,17 +366,19 @@ int main(int argc, char** argv) {
     string r_tunnel_arg = result.count("reversetunnel")
                               ? result["reversetunnel"].as<string>()
                               : "";
-    
+
     for (const auto& localForward : sshConfigOptions.local_forwards) {
-      string tunnelEntry = to_string(localForward.first) + "," + to_string(localForward.second);
-      LOG(INFO) << "Adding tunnel from SSH config LocalForward: " << tunnelEntry;
+      string tunnelEntry =
+          to_string(localForward.first) + "," + to_string(localForward.second);
+      LOG(INFO) << "Adding tunnel from SSH config LocalForward: "
+                << tunnelEntry;
       if (tunnel_arg.empty()) {
         tunnel_arg = tunnelEntry;
       } else {
         tunnel_arg += "," + tunnelEntry;
       }
     }
-    
+
     TerminalClient terminalClient(clientSocket, clientPipeSocket,
                                   socketEndpoint, id, passkey, console,
                                   is_jumphost, tunnel_arg, r_tunnel_arg,

@@ -30,9 +30,10 @@ TerminalClient::TerminalClient(
         auto pfsresponse =
             portForwardHandler->createSource(pfsr, nullptr, -1, -1);
         if (pfsresponse.has_error()) {
-          LOG(WARNING) << "Failed to establish port forward " 
-                       << pfsr.source().port() << ":" << pfsr.destination().port() 
-                       << " - " << pfsresponse.error();
+          LOG(WARNING) << "Failed to establish port forward "
+                       << pfsr.source().port() << ":"
+                       << pfsr.destination().port() << " - "
+                       << pfsresponse.error();
           continue;
         }
 #endif

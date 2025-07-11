@@ -9,8 +9,8 @@
 #include <fstream>
 #include <iostream>
 #include <string>
-#include <vector>
 #include <utility>
+#include <vector>
 
 /* This is needed for a standard getpwuid_r on opensolaris */
 #define _POSIX_PTHREAD_SEMANTICS
@@ -1053,21 +1053,22 @@ int ssh_options_set(struct Options *options, enum ssh_options_e type,
           CLOG(INFO, "stdout") << "error" << endl;
           return -1;
         }
-        
+
         // Format is [bind_address:]port host:hostport
         char *local_port_str = strtok(forward_entry, " ");
         char *remote_part = strtok(NULL, " ");
-        
+
         // TODO: Support bind_address before the local port.
         if (local_port_str && remote_part) {
           int local_port = atoi(local_port_str);
           char *colon_pos = strrchr(remote_part, ':');
           if (colon_pos) {
             int remote_port = atoi(colon_pos + 1);
-            options->local_forwards.push_back(make_pair(local_port, remote_port));
+            options->local_forwards.push_back(
+                make_pair(local_port, remote_port));
           }
         }
-        
+
         SAFE_FREE(forward_entry);
       }
       break;
@@ -1440,7 +1441,7 @@ static int ssh_config_parse_line(const char *targethost,
       p = ssh_config_get_str_tok(&s, NULL);
       if (p && *parsing) {
         char *remote_part = ssh_config_get_str_tok(&s, NULL);
-        if (remote_part) { 
+        if (remote_part) {
           char forward_str[1024];
           snprintf(forward_str, sizeof(tunnel_str), "%s %s", p, remote_part);
           ssh_options_set(options, SSH_OPTIONS_LOCALFORWARD, forward_str);
