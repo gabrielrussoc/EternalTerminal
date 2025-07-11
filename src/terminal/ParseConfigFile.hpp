@@ -1269,7 +1269,8 @@ static int ssh_config_parse_line(const char *targethost,
 
   opcode = ssh_config_get_opcode(keyword);
   if (*parsing == 1 && opcode != SOC_HOST && opcode != SOC_MATCH &&
-      opcode != SOC_UNSUPPORTED && opcode != SOC_INCLUDE && opcode != SOC_LOCALFORWARD) {
+      opcode != SOC_UNSUPPORTED && opcode != SOC_INCLUDE &&
+      opcode != SOC_LOCALFORWARD) {
     if (seen[opcode] != 0) {
       SAFE_FREE(x);
       return 0;
