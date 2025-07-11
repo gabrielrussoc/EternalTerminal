@@ -1438,14 +1438,9 @@ static int ssh_config_parse_line(const char *targethost,
       }
       break;
     case SOC_LOCALFORWARD:
-      p = ssh_config_get_str_tok(&s, NULL);
+      p = ssh_config_get_cmd(&s);
       if (p && *parsing) {
-        const char *remote_part = ssh_config_get_str_tok(&s, NULL);
-        if (remote_part) {
-          char forward_str[1024];
-          snprintf(forward_str, sizeof(forward_str), "%s %s", p, remote_part);
-          ssh_options_set(options, SSH_OPTIONS_LOCALFORWARD, forward_str);
-        }
+        ssh_options_set(options, SSH_OPTIONS_LOCALFORWARD, p);
       }
       break;
     case SOC_UNSUPPORTED:
