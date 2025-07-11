@@ -84,6 +84,7 @@ enum ssh_config_opcode_e {
   SOC_PROXYJUMP,
   SOC_FORWARDAGENT,
   SOC_IDENTITYAGENT,
+  SOC_LOCALFORWARD,
   SOC_END /* Keep this one last in the list */
 };
 
@@ -121,7 +122,8 @@ enum ssh_options_e {
   SSH_OPTIONS_HMAC_S_C,
   SSH_OPTIONS_PROXYJUMP,
   SSH_OPTIONS_FORWARDAGENT,
-  SSH_OPTIONS_IDENTITYAGENT
+  SSH_OPTIONS_IDENTITYAGENT,
+  SSH_OPTIONS_LOCALFORWARD
 };
 
 struct Options {
@@ -141,6 +143,7 @@ struct Options {
   int gss_delegate_creds;
   int forward_agent;
   char *identity_agent;
+  char *local_forwards; /* comma-separated list of local port forwards */
 };
 
 struct ssh_config_keyword_table_s {
@@ -166,6 +169,7 @@ static struct ssh_config_keyword_table_s ssh_config_keyword_table[] = {
     {"proxyjump", SOC_PROXYJUMP},
     {"forwardagent", SOC_FORWARDAGENT},
     {"identityagent", SOC_IDENTITYAGENT},
+    {"localforward", SOC_LOCALFORWARD},
     {NULL, SOC_UNSUPPORTED}};
 
 static enum ssh_config_opcode_e ssh_config_get_opcode(char *keyword) {
@@ -1036,6 +1040,31 @@ int ssh_options_set(struct Options *options, enum ssh_options_e type,
         }
       }
       break;
+    case SSH_OPTIONS_LOCALFORWARD:
+      v = static_cast<const char *>(value);
+      if (v == NULL || v[0] == '\0') {
+        CLOG(INFO, "stdout") << "invalid error" << endl;
+        return -1;
+      } else {
+        // Append to existing local_forwards (comma-separated)
+        if (options->local_forwards == NULL) {
+          options->local_forwards = strdup(v);
+        } else {
+          char *new_forwards = (char*)malloc(strlen(options->local_forwards) + strlen(v) + 2);
+          if (new_forwards == NULL) {
+            CLOG(INFO, "stdout") << "error" << endl;
+            return -1;
+          }
+          sprintf(new_forwards, "%s,%s", options->local_forwards, v);
+          SAFE_FREE(options->local_forwards);
+          options->local_forwards = new_forwards;
+        }
+        if (options->local_forwards == NULL) {
+          CLOG(INFO, "stdout") << "error" << endl;
+          return -1;
+        }
+      }
+      break;
 
     default:
       CLOG(INFO, "stdout") << "Unknown ssh option" << endl;
@@ -1399,6 +1428,19 @@ static int ssh_config_parse_line(const char *targethost,
           ssh_options_set(options, SSH_OPTIONS_IDENTITYAGENT, filename);
         }
         SAFE_FREE(filename);
+      }
+      break;
+    case SOC_LOCALFORWARD:
+      p = ssh_config_get_str_tok(&s, NULL);
+      if (p && *parsing) {
+        char *remote_part = ssh_config_get_str_tok(&s, NULL);
+        if (remote_part) {
+          // Format: LocalForward [bind_address:]port [host:]hostport
+          // Create a tunnel string in the format "local_port:remote_host:remote_port"
+          char tunnel_str[1024];
+          snprintf(tunnel_str, sizeof(tunnel_str), "%s:%s", p, remote_part);
+          ssh_options_set(options, SSH_OPTIONS_LOCALFORWARD, tunnel_str);
+        }
       }
       break;
     case SOC_UNSUPPORTED:

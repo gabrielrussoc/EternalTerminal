@@ -30,8 +30,18 @@ TerminalClient::TerminalClient(
         auto pfsresponse =
             portForwardHandler->createSource(pfsr, nullptr, -1, -1);
         if (pfsresponse.has_error()) {
-          throw std::runtime_error(pfsresponse.error());
+          // Instead of throwing, just log a warning and continue
+          LOG(WARNING) << "Failed to establish port forward " 
+                       << pfsr.source().port() << ":" << pfsr.destination().port() 
+                       << " - " << pfsresponse.error();
+          CLOG(INFO, "stdout") << "Warning: Failed to establish port forward " 
+                               << pfsr.source().port() << ":" << pfsr.destination().port() 
+                               << " - " << pfsresponse.error() << endl;
+          // Continue to next port forward instead of failing
+          continue;
         }
+        LOG(INFO) << "Successfully established port forward " 
+                  << pfsr.source().port() << ":" << pfsr.destination().port();
 #endif
       }
     }
