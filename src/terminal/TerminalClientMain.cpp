@@ -369,7 +369,7 @@ int main(int argc, char** argv) {
 
     for (const auto& localForward : sshConfigOptions.local_forwards) {
       string tunnelEntry =
-          to_string(localForward.first) + "," + to_string(localForward.second);
+          to_string(localForward.first) + ":" + to_string(localForward.second);
       LOG(INFO) << "Adding tunnel from SSH config LocalForward: "
                 << tunnelEntry;
       if (tunnel_arg.empty()) {
