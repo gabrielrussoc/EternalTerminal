@@ -59,7 +59,7 @@ int main(int argc, char** argv) {
       0,     // gss_delegate_creds
       0,     // forward_agent
       NULL,  // identity_agent
-      NULL   // local_forwards
+      {}     // local_forwards (empty vector)
   };
 
   // Parse command line arguments
@@ -367,31 +367,21 @@ int main(int argc, char** argv) {
                               ? result["reversetunnel"].as<string>()
                               : "";
     
-    // Process LocalForward entries from SSH config
-    if (sshConfigOptions.local_forwards) {
-      string ssh_local_forwards = string(sshConfigOptions.local_forwards);
+    if (!sshConfigOptions.local_forwards.empty()) {
       try {
-        auto localForwardRequests = parseLocalForwardToRequests(ssh_local_forwards);
-        // Convert LocalForward entries to tunnel format
-        for (const auto& pfsr : localForwardRequests) {
-          string tunnelEntry = to_string(pfsr.source().port()) + ":" +
-                               pfsr.destination().name() + ":" +
-                               to_string(pfsr.destination().port());
+        for (const auto& localForward : sshConfigOptions.local_forwards) {
+          auto tunnelEntry = parseLocalForwardToTunnelArg(localForward);
           if (tunnel_arg.empty()) {
             tunnel_arg = tunnelEntry;
           } else {
             tunnel_arg += "," + tunnelEntry;
           }
         }
-        if (!localForwardRequests.empty()) {
-          LOG(INFO) << "Added " << localForwardRequests.size() 
+        LOG(INFO) << "Added " << sshConfigOptions.local_forwards.size() 
                     << " LocalForward entries from SSH config";
-        }
       } catch (const TunnelParseException& e) {
         LOG(WARNING) << "Failed to parse LocalForward entries from SSH config: " 
                      << e.what();
-        CLOG(INFO, "stdout") << "Warning: Failed to parse LocalForward entries from SSH config: " 
-                             << e.what() << endl;
       }
     }
     
@@ -418,7 +408,9 @@ int main(int argc, char** argv) {
   SAFE_FREE(sshConfigOptions.gss_server_identity);
   SAFE_FREE(sshConfigOptions.gss_client_identity);
   SAFE_FREE(sshConfigOptions.identity_agent);
-  SAFE_FREE(sshConfigOptions.local_forwards);
+  for (char* local_forward : sshConfigOptions.local_forwards) {
+    SAFE_FREE(local_forward);
+  }
 
 #ifdef WIN32
   WSACleanup();

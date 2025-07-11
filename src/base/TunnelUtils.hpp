@@ -6,7 +6,6 @@
 namespace et {
 
 vector<PortForwardSourceRequest> parseRangesToRequests(const string& input);
-vector<PortForwardSourceRequest> parseLocalForwardToRequests(const string& input);
 
 class TunnelParseException : public std::exception {
  public:

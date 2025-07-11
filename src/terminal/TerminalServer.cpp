@@ -225,20 +225,16 @@ void TerminalServer::runTerminal(
           pfsr, nullptr, userInfo.uid(), userInfo.gid());
     }
     if (pfsresponse.has_error()) {
-      // Instead of returning (which terminates the connection), 
-      // just log a warning and continue
-      LOG(WARNING) << "Failed to establish reverse tunnel " 
-                   << pfsr.source().port() << ":" << pfsr.destination().port() 
-                   << " - " << pfsresponse.error();
-      // Continue to next reverse tunnel instead of failing
-      continue;
+      InitialResponse response;
+      response.set_error(pfsresponse.error());
+      serverClientState->writePacket(Packet(
+          uint8_t(EtPacketType::INITIAL_RESPONSE), protoToString(response)));
+      return;
     }
     if (pfsr.has_environmentvariable()) {
       environmentVariables[pfsr.environmentvariable()] = sourceName;
       pipePaths.push_back(sourceName);
     }
-    LOG(INFO) << "Successfully established reverse tunnel " 
-              << pfsr.source().port() << ":" << pfsr.destination().port();
   }
   serverClientState->writePacket(
       Packet(uint8_t(EtPacketType::INITIAL_RESPONSE), protoToString(response)));

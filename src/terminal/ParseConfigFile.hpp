@@ -143,7 +143,7 @@ struct Options {
   int gss_delegate_creds;
   int forward_agent;
   char *identity_agent;
-  char *local_forwards; /* comma-separated list of local port forwards */
+  vector<char*> local_forwards;
 };
 
 struct ssh_config_keyword_table_s {
@@ -1046,23 +1046,12 @@ int ssh_options_set(struct Options *options, enum ssh_options_e type,
         CLOG(INFO, "stdout") << "invalid error" << endl;
         return -1;
       } else {
-        // Append to existing local_forwards (comma-separated)
-        if (options->local_forwards == NULL) {
-          options->local_forwards = strdup(v);
-        } else {
-          char *new_forwards = (char*)malloc(strlen(options->local_forwards) + strlen(v) + 2);
-          if (new_forwards == NULL) {
-            CLOG(INFO, "stdout") << "error" << endl;
-            return -1;
-          }
-          sprintf(new_forwards, "%s,%s", options->local_forwards, v);
-          SAFE_FREE(options->local_forwards);
-          options->local_forwards = new_forwards;
-        }
-        if (options->local_forwards == NULL) {
+        char *forward_entry = strdup(v);
+        if (forward_entry == NULL) {
           CLOG(INFO, "stdout") << "error" << endl;
           return -1;
         }
+        options->local_forwards.push_back(forward_entry);
       }
       break;
 
@@ -1435,10 +1424,8 @@ static int ssh_config_parse_line(const char *targethost,
       if (p && *parsing) {
         char *remote_part = ssh_config_get_str_tok(&s, NULL);
         if (remote_part) {
-          // Format: LocalForward [bind_address:]port [host:]hostport
-          // Create a tunnel string in the format "local_port:remote_host:remote_port"
           char tunnel_str[1024];
-          snprintf(tunnel_str, sizeof(tunnel_str), "%s:%s", p, remote_part);
+          snprintf(tunnel_str, sizeof(tunnel_str), "%s %s", p, remote_part);
           ssh_options_set(options, SSH_OPTIONS_LOCALFORWARD, tunnel_str);
         }
       }
