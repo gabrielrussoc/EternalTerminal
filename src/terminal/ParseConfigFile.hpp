@@ -9,6 +9,8 @@
 #include <fstream>
 #include <iostream>
 #include <string>
+#include <vector>
+#include <utility>
 
 /* This is needed for a standard getpwuid_r on opensolaris */
 #define _POSIX_PTHREAD_SEMANTICS
@@ -143,7 +145,7 @@ struct Options {
   int gss_delegate_creds;
   int forward_agent;
   char *identity_agent;
-  vector<char*> local_forwards;
+  vector<pair<int, int>> local_forwards;
 };
 
 struct ssh_config_keyword_table_s {
@@ -1051,7 +1053,22 @@ int ssh_options_set(struct Options *options, enum ssh_options_e type,
           CLOG(INFO, "stdout") << "error" << endl;
           return -1;
         }
-        options->local_forwards.push_back(forward_entry);
+        
+        char *local_port_str = strtok(forward_entry, " ");
+        char *remote_part = strtok(NULL, " ");
+        
+        if (local_port_str && remote_part) {
+          int local_port = atoi(local_port_str);
+          
+          // Extract port from remote_host:remote_port
+          char *colon_pos = strrchr(remote_part, ':');
+          if (colon_pos) {
+            int remote_port = atoi(colon_pos + 1);
+            options->local_forwards.push_back(make_pair(local_port, remote_port));
+          }
+        }
+        
+        SAFE_FREE(forward_entry);
       }
       break;
 

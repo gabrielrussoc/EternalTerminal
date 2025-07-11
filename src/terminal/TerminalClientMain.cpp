@@ -367,21 +367,13 @@ int main(int argc, char** argv) {
                               ? result["reversetunnel"].as<string>()
                               : "";
     
-    if (!sshConfigOptions.local_forwards.empty()) {
-      try {
-        for (const auto& localForward : sshConfigOptions.local_forwards) {
-          auto tunnelEntry = parseLocalForwardToTunnelArg(localForward);
-          if (tunnel_arg.empty()) {
-            tunnel_arg = tunnelEntry;
-          } else {
-            tunnel_arg += "," + tunnelEntry;
-          }
-        }
-        LOG(INFO) << "Added " << sshConfigOptions.local_forwards.size() 
-                    << " LocalForward entries from SSH config";
-      } catch (const TunnelParseException& e) {
-        LOG(WARNING) << "Failed to parse LocalForward entries from SSH config: " 
-                     << e.what();
+    for (const auto& localForward : sshConfigOptions.local_forwards) {
+      string tunnelEntry = to_string(localForward.first) + "," + to_string(localForward.second);
+      LOG(INFO) << "Adding tunnel from SSH config LocalForward: " << tunnelEntry;
+      if (tunnel_arg.empty()) {
+        tunnel_arg = tunnelEntry;
+      } else {
+        tunnel_arg += "," + tunnelEntry;
       }
     }
     
@@ -408,9 +400,6 @@ int main(int argc, char** argv) {
   SAFE_FREE(sshConfigOptions.gss_server_identity);
   SAFE_FREE(sshConfigOptions.gss_client_identity);
   SAFE_FREE(sshConfigOptions.identity_agent);
-  for (char* local_forward : sshConfigOptions.local_forwards) {
-    SAFE_FREE(local_forward);
-  }
 
 #ifdef WIN32
   WSACleanup();
