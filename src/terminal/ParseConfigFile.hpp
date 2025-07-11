@@ -1054,13 +1054,13 @@ int ssh_options_set(struct Options *options, enum ssh_options_e type,
           return -1;
         }
         
+        // Format is [bind_address:]port host:hostport
         char *local_port_str = strtok(forward_entry, " ");
         char *remote_part = strtok(NULL, " ");
         
+        // TODO: Support bind_address before the local port.
         if (local_port_str && remote_part) {
           int local_port = atoi(local_port_str);
-          
-          // Extract port from remote_host:remote_port
           char *colon_pos = strrchr(remote_part, ':');
           if (colon_pos) {
             int remote_port = atoi(colon_pos + 1);
@@ -1440,10 +1440,10 @@ static int ssh_config_parse_line(const char *targethost,
       p = ssh_config_get_str_tok(&s, NULL);
       if (p && *parsing) {
         char *remote_part = ssh_config_get_str_tok(&s, NULL);
-        if (remote_part) {
-          char tunnel_str[1024];
-          snprintf(tunnel_str, sizeof(tunnel_str), "%s %s", p, remote_part);
-          ssh_options_set(options, SSH_OPTIONS_LOCALFORWARD, tunnel_str);
+        if (remote_part) { 
+          char forward_str[1024];
+          snprintf(forward_str, sizeof(tunnel_str), "%s %s", p, remote_part);
+          ssh_options_set(options, SSH_OPTIONS_LOCALFORWARD, forward_str);
         }
       }
       break;
